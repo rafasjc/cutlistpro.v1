@@ -1,5 +1,5 @@
 """
-CutList Pro - Versão 3.0 (Corrigida)
+CutList Pro - Versão 3.0 (Corrigida - Sem Erros)
 Análise IA de SketchUp + Múltiplos Móveis + Criação Automática de Projetos
 """
 
@@ -108,60 +108,89 @@ def analyze_sketchup_with_ai(file_content, filename):
     
     # Padrões comuns em arquivos de marcenaria
     if "armario" in filename.lower() or "kitchen" in filename.lower() or file_size > 500000:
-        # Armário Alto
+        # Armário Alto - CÁLCULO CORRIGIDO
+        alto_components = [
+            {'name': 'Lateral Esquerda', 'length': 900, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Lateral Direita', 'length': 900, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Fundo', 'length': 800, 'width': 900, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Topo', 'length': 830, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Base', 'length': 830, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Prateleira', 'length': 800, 'width': 330, 'thickness': 15, 'quantity': 3, 'material': 'MDF'},
+            {'name': 'Porta Esquerda', 'length': 400, 'width': 850, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Porta Direita', 'length': 400, 'width': 850, 'thickness': 15, 'quantity': 1, 'material': 'MDF'}
+        ]
+        
+        # Calcular área real do armário alto
+        alto_area = 0
+        for comp in alto_components:
+            area_comp = (comp['length'] * comp['width'] * comp['quantity']) / 1000000
+            alto_area += area_comp
+        
+        alto_cost = alto_area * 80  # R$ 80/m² para MDF
+        
         detected_furniture.append({
             'id': str(uuid.uuid4())[:8],
             'name': 'Armário Alto',
             'type': 'Armário Suspenso',
             'description': 'Armário alto com 2 portas e prateleiras internas',
-            'estimated_area': 2.85,
-            'estimated_cost': 228.00,
-            'components': [
-                {'name': 'Lateral Esquerda', 'length': 900, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Lateral Direita', 'length': 900, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Fundo', 'length': 800, 'width': 900, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Topo', 'length': 830, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Base', 'length': 830, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Prateleira', 'length': 800, 'width': 330, 'thickness': 15, 'quantity': 3, 'material': 'MDF'},
-                {'name': 'Porta Esquerda', 'length': 400, 'width': 850, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Porta Direita', 'length': 400, 'width': 850, 'thickness': 15, 'quantity': 1, 'material': 'MDF'}
-            ]
+            'estimated_area': round(alto_area, 2),
+            'estimated_cost': round(alto_cost, 2),
+            'components': alto_components
         })
         
-        # Armário Baixo
+        # Armário Baixo - CÁLCULO CORRIGIDO
+        baixo_components = [
+            {'name': 'Lateral Esquerda', 'length': 600, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Lateral Direita', 'length': 600, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Fundo', 'length': 1200, 'width': 600, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Tampo', 'length': 1230, 'width': 380, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Base', 'length': 1200, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Divisória Central', 'length': 570, 'width': 330, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Porta Esquerda', 'length': 580, 'width': 550, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
+            {'name': 'Gaveta Frontal', 'length': 580, 'width': 150, 'thickness': 15, 'quantity': 2, 'material': 'MDF'}
+        ]
+        
+        # Calcular área real do armário baixo
+        baixo_area = 0
+        for comp in baixo_components:
+            area_comp = (comp['length'] * comp['width'] * comp['quantity']) / 1000000
+            baixo_area += area_comp
+        
+        baixo_cost = baixo_area * 80  # R$ 80/m² para MDF
+        
         detected_furniture.append({
             'id': str(uuid.uuid4())[:8],
             'name': 'Armário Baixo',
             'type': 'Balcão',
             'description': 'Armário baixo com gavetas e portas',
-            'estimated_area': 1.95,
-            'estimated_cost': 156.00,
-            'components': [
-                {'name': 'Lateral Esquerda', 'length': 600, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Lateral Direita', 'length': 600, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Fundo', 'length': 1200, 'width': 600, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Tampo', 'length': 1230, 'width': 380, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Base', 'length': 1200, 'width': 350, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Divisória Central', 'length': 570, 'width': 330, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Porta Esquerda', 'length': 580, 'width': 550, 'thickness': 15, 'quantity': 1, 'material': 'MDF'},
-                {'name': 'Gaveta Frontal', 'length': 580, 'width': 150, 'thickness': 15, 'quantity': 2, 'material': 'MDF'}
-            ]
+            'estimated_area': round(baixo_area, 2),
+            'estimated_cost': round(baixo_cost, 2),
+            'components': baixo_components
         })
     
     else:
         # Móvel genérico baseado no tamanho do arquivo
+        generic_components = [
+            {'name': 'Painel Principal', 'length': 800, 'width': 400, 'thickness': 15, 'quantity': 2, 'material': 'MDF'},
+            {'name': 'Prateleira', 'length': 760, 'width': 350, 'thickness': 15, 'quantity': 2, 'material': 'MDF'},
+            {'name': 'Fundo', 'length': 760, 'width': 380, 'thickness': 12, 'quantity': 1, 'material': 'MDF'}
+        ]
+        
+        generic_area = 0
+        for comp in generic_components:
+            area_comp = (comp['length'] * comp['width'] * comp['quantity']) / 1000000
+            generic_area += area_comp
+        
+        generic_cost = generic_area * 80
+        
         detected_furniture.append({
             'id': str(uuid.uuid4())[:8],
             'name': 'Móvel Detectado',
             'type': 'Móvel Personalizado',
             'description': 'Móvel identificado pela análise IA',
-            'estimated_area': 1.2,
-            'estimated_cost': 96.00,
-            'components': [
-                {'name': 'Painel Principal', 'length': 800, 'width': 400, 'thickness': 15, 'quantity': 2, 'material': 'MDF'},
-                {'name': 'Prateleira', 'length': 760, 'width': 350, 'thickness': 15, 'quantity': 2, 'material': 'MDF'},
-                {'name': 'Fundo', 'length': 760, 'width': 380, 'thickness': 12, 'quantity': 1, 'material': 'MDF'}
-            ]
+            'estimated_area': round(generic_area, 2),
+            'estimated_cost': round(generic_cost, 2),
+            'components': generic_components
         })
     
     # Calcular estatísticas totais
@@ -645,10 +674,7 @@ elif page == "🤖 Importar SketchUp IA":
         # Processar arquivo
         if not st.session_state.uploaded_file_processed:
             with st.spinner("🤖 Analisando arquivo com IA... Detectando móveis..."):
-                import time
-                time.sleep(3)
-                
-                # Simular análise IA
+                # Simular análise IA (removido time.sleep)
                 file_content = uploaded_file.read()
                 analysis_result = analyze_sketchup_with_ai(file_content, uploaded_file.name)
                 
@@ -735,7 +761,7 @@ elif page == "🤖 Importar SketchUp IA":
                     st.session_state.uploaded_file_processed = False
                     st.session_state.analyzed_furniture = []
                     
-                    time.sleep(2)
+                    # Rerun sem time.sleep
                     st.rerun()
             
             with col3:

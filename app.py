@@ -1,5 +1,5 @@
 """
-CutList Pro - Versão 3.0 (Melhorada)
+CutList Pro - Versão 3.0 (Corrigida)
 Análise IA de SketchUp + Múltiplos Móveis + Criação Automática de Projetos
 """
 
@@ -765,228 +765,225 @@ elif page == "📁 Projetos":
     # Verificar se há projetos
     if not data['projects']:
         st.warning("📭 Nenhum projeto encontrado. Importe um arquivo SketchUp para começar!")
-        return
-    
-    # Seletor de projeto
-    st.markdown("#### Selecionar Projeto:")
-    project_options = [f"{p['name']} ({p['components']} componentes)" for p in data['projects']]
-    selected_index = st.selectbox(
-        "Projeto:",
-        range(len(project_options)),
-        format_func=lambda x: project_options[x],
-        index=min(st.session_state.current_project, len(data['projects']) - 1),
-        key="project_selector"
-    )
-    
-    if selected_index != st.session_state.current_project:
-        st.session_state.current_project = selected_index
-        st.rerun()
-    
-    # Informações do projeto
-    project = data['projects'][st.session_state.current_project]
-    
-    # Verificar se tem componentes definidos
-    if project['id'] in data['components']:
-        components = data['components'][project['id']]
-    elif 'furniture_list' in project:
-        # Projeto criado pela IA - combinar componentes de todos os móveis
-        components = []
-        for furniture in project['furniture_list']:
-            components.extend(furniture['components'])
     else:
-        components = []
-    
-    st.markdown(f"### 📊 {project['name']}")
-    
-    # Verificar se é projeto criado pela IA
-    is_ai_project = 'furniture_list' in project
-    if is_ai_project:
-        st.markdown("🤖 **Projeto criado pela Análise IA**")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.write(f"**Descrição:** {project['description']}")
-        st.write(f"**Status:** {project['status']}")
-        st.write(f"**Criado em:** {project['created_at']}")
-    
-    with col2:
-        st.write(f"**Atualizado em:** {project['updated_at']}")
-        st.write(f"**Componentes:** {project['components']}")
-        st.write(f"**Área Total:** {project['total_area']} m²")
-    
-    st.markdown("---")
-    
-    # Mostrar móveis se for projeto IA
-    if is_ai_project and 'furniture_list' in project:
-        st.markdown("### 🏠 Móveis no Projeto")
+        # Seletor de projeto
+        st.markdown("#### Selecionar Projeto:")
+        project_options = [f"{p['name']} ({p['components']} componentes)" for p in data['projects']]
+        selected_index = st.selectbox(
+            "Projeto:",
+            range(len(project_options)),
+            format_func=lambda x: project_options[x],
+            index=min(st.session_state.current_project, len(data['projects']) - 1),
+            key="project_selector"
+        )
         
-        for furniture in project['furniture_list']:
-            with st.expander(f"🗄️ {furniture['name']} - {furniture['type']}"):
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.write(f"**Tipo:** {furniture['type']}")
-                    st.write(f"**Descrição:** {furniture['description']}")
-                
-                with col2:
-                    st.write(f"**Área:** {furniture['estimated_area']:.2f} m²")
-                    st.write(f"**Custo:** R$ {furniture['estimated_cost']:.2f}")
-                
-                # Componentes do móvel
-                df_furniture_components = pd.DataFrame(furniture['components'])
-                st.dataframe(df_furniture_components, use_container_width=True)
-    
-    # Lista de componentes
-    st.markdown("### 🔧 Componentes")
-    
-    if components:
-        df_components = pd.DataFrame(components)
-        st.dataframe(df_components, use_container_width=True)
-    else:
-        st.warning("⚠️ Nenhum componente encontrado para este projeto.")
-    
-    # Botões de ação
-    if components:
-        col1, col2, col3 = st.columns(3)
+        if selected_index != st.session_state.current_project:
+            st.session_state.current_project = selected_index
+            st.rerun()
+        
+        # Informações do projeto
+        project = data['projects'][st.session_state.current_project]
+        
+        # Verificar se tem componentes definidos
+        if project['id'] in data['components']:
+            components = data['components'][project['id']]
+        elif 'furniture_list' in project:
+            # Projeto criado pela IA - combinar componentes de todos os móveis
+            components = []
+            for furniture in project['furniture_list']:
+                components.extend(furniture['components'])
+        else:
+            components = []
+        
+        st.markdown(f"### 📊 {project['name']}")
+        
+        # Verificar se é projeto criado pela IA
+        is_ai_project = 'furniture_list' in project
+        if is_ai_project:
+            st.markdown("🤖 **Projeto criado pela Análise IA**")
+        
+        col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("🎯 Gerar Plano de Corte", type="primary"):
-                st.session_state.cutting_diagram_generated = True
-                st.success("✅ Plano de corte gerado! Vá para 'Diagramas de Corte' para visualizar.")
+            st.write(f"**Descrição:** {project['description']}")
+            st.write(f"**Status:** {project['status']}")
+            st.write(f"**Criado em:** {project['created_at']}")
         
         with col2:
-            if st.button("💰 Gerar Orçamento", type="primary"):
-                st.session_state.budget_generated = True
-                
-                # Gerar orçamento
-                budget_data, material_summary, total_cost, total_area, total_weight = generate_budget(
-                    project['id'], components, data['materials']
-                )
-                
-                st.markdown('<div class="success-box">', unsafe_allow_html=True)
-                st.markdown("### 💰 Orçamento Gerado!")
-                
-                col_a, col_b, col_c = st.columns(3)
-                with col_a:
-                    st.metric("💵 Custo Total", f"R$ {total_cost:.2f}")
-                with col_b:
-                    st.metric("📏 Área Total", f"{total_area:.2f} m²")
-                with col_c:
-                    st.metric("⚖️ Peso Total", f"{total_weight:.1f} kg")
-                
-                st.markdown("#### 📋 Resumo por Material:")
-                for material, data_mat in material_summary.items():
-                    st.write(f"**{material}:** {data_mat['area']:.2f} m² - R$ {data_mat['cost']:.2f}")
-                
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.write(f"**Atualizado em:** {project['updated_at']}")
+            st.write(f"**Componentes:** {project['components']}")
+            st.write(f"**Área Total:** {project['total_area']} m²")
         
-        with col3:
-            if st.button("📄 Gerar Relatório", type="primary"):
-                # Gerar dados do relatório
-                budget_data, material_summary, total_cost, total_area, total_weight = generate_budget(
-                    project['id'], components, data['materials']
-                )
-                
-                # Criar CSV
-                csv_content = create_csv_report(budget_data, material_summary, project['name'])
-                
-                st.success("📄 Relatório gerado com sucesso!")
-                
-                # Botão de download
-                st.download_button(
-                    label="⬇️ Download Relatório CSV",
-                    data=csv_content,
-                    file_name=f"orcamento_{project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv",
-                    type="primary"
-                )
+        st.markdown("---")
+        
+        # Mostrar móveis se for projeto IA
+        if is_ai_project and 'furniture_list' in project:
+            st.markdown("### 🏠 Móveis no Projeto")
+            
+            for furniture in project['furniture_list']:
+                with st.expander(f"🗄️ {furniture['name']} - {furniture['type']}"):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write(f"**Tipo:** {furniture['type']}")
+                        st.write(f"**Descrição:** {furniture['description']}")
+                    
+                    with col2:
+                        st.write(f"**Área:** {furniture['estimated_area']:.2f} m²")
+                        st.write(f"**Custo:** R$ {furniture['estimated_cost']:.2f}")
+                    
+                    # Componentes do móvel
+                    df_furniture_components = pd.DataFrame(furniture['components'])
+                    st.dataframe(df_furniture_components, use_container_width=True)
+        
+        # Lista de componentes
+        st.markdown("### 🔧 Componentes")
+        
+        if components:
+            df_components = pd.DataFrame(components)
+            st.dataframe(df_components, use_container_width=True)
+        else:
+            st.warning("⚠️ Nenhum componente encontrado para este projeto.")
+        
+        # Botões de ação
+        if components:
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                if st.button("🎯 Gerar Plano de Corte", type="primary"):
+                    st.session_state.cutting_diagram_generated = True
+                    st.success("✅ Plano de corte gerado! Vá para 'Diagramas de Corte' para visualizar.")
+            
+            with col2:
+                if st.button("💰 Gerar Orçamento", type="primary"):
+                    st.session_state.budget_generated = True
+                    
+                    # Gerar orçamento
+                    budget_data, material_summary, total_cost, total_area, total_weight = generate_budget(
+                        project['id'], components, data['materials']
+                    )
+                    
+                    st.markdown('<div class="success-box">', unsafe_allow_html=True)
+                    st.markdown("### 💰 Orçamento Gerado!")
+                    
+                    col_a, col_b, col_c = st.columns(3)
+                    with col_a:
+                        st.metric("💵 Custo Total", f"R$ {total_cost:.2f}")
+                    with col_b:
+                        st.metric("📏 Área Total", f"{total_area:.2f} m²")
+                    with col_c:
+                        st.metric("⚖️ Peso Total", f"{total_weight:.1f} kg")
+                    
+                    st.markdown("#### 📋 Resumo por Material:")
+                    for material, data_mat in material_summary.items():
+                        st.write(f"**{material}:** {data_mat['area']:.2f} m² - R$ {data_mat['cost']:.2f}")
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+            
+            with col3:
+                if st.button("📄 Gerar Relatório", type="primary"):
+                    # Gerar dados do relatório
+                    budget_data, material_summary, total_cost, total_area, total_weight = generate_budget(
+                        project['id'], components, data['materials']
+                    )
+                    
+                    # Criar CSV
+                    csv_content = create_csv_report(budget_data, material_summary, project['name'])
+                    
+                    st.success("📄 Relatório gerado com sucesso!")
+                    
+                    # Botão de download
+                    st.download_button(
+                        label="⬇️ Download Relatório CSV",
+                        data=csv_content,
+                        file_name=f"orcamento_{project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv",
+                        type="primary"
+                    )
 
 elif page == "📐 Diagramas de Corte":
     st.markdown("### 📐 Diagramas de Corte")
     
     if not data['projects']:
         st.warning("📭 Nenhum projeto encontrado.")
-        return
-    
-    current_project = data['projects'][st.session_state.current_project]
-    
-    # Obter componentes
-    if current_project['id'] in data['components']:
-        components = data['components'][current_project['id']]
-    elif 'furniture_list' in current_project:
-        components = []
-        for furniture in current_project['furniture_list']:
-            components.extend(furniture['components'])
     else:
-        components = []
-    
-    if not components:
-        st.warning("⚠️ Nenhum componente encontrado para gerar diagrama.")
-        return
-    
-    if st.button("🎯 Gerar Diagrama de Corte", type="primary"):
-        st.session_state.cutting_diagram_generated = True
+        current_project = data['projects'][st.session_state.current_project]
         
-        with st.spinner("Gerando diagrama otimizado..."):
-            fig, utilization, waste = generate_cutting_diagram(components)
-            
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Estatísticas
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric("📊 Aproveitamento", f"{utilization:.1f}%", 
-                         delta="Excelente" if utilization > 80 else "Bom" if utilization > 60 else "Regular")
-            
-            with col2:
-                st.metric("🗑️ Desperdício", f"{waste:.1f}%", 
-                         delta=f"{-5:.1f}% vs média")
-            
-            with col3:
-                st.metric("📦 Chapas Necessárias", "1", delta="Otimizado")
-            
-            with col4:
-                sheet_cost = (2.75 * 1.83) * 80  # Área da chapa * preço MDF
-                st.metric("💰 Custo da Chapa", f"R$ {sheet_cost:.2f}")
-            
-            # Informações adicionais
-            st.markdown("---")
-            st.markdown("### 📋 Informações do Corte")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**Especificações da Chapa:**")
-                st.write("• Dimensões: 2750 x 1830 mm")
-                st.write("• Material: MDF 15mm")
-                st.write("• Área: 5.03 m²")
+        # Obter componentes
+        if current_project['id'] in data['components']:
+            components = data['components'][current_project['id']]
+        elif 'furniture_list' in current_project:
+            components = []
+            for furniture in current_project['furniture_list']:
+                components.extend(furniture['components'])
+        else:
+            components = []
+        
+        if not components:
+            st.warning("⚠️ Nenhum componente encontrado para gerar diagrama.")
+        else:
+            if st.button("🎯 Gerar Diagrama de Corte", type="primary"):
+                st.session_state.cutting_diagram_generated = True
                 
-            with col2:
-                st.markdown("**Recomendações:**")
-                st.write("• Usar serra circular com guia")
-                st.write("• Margem de segurança: 3mm")
-                st.write("• Verificar fibra da madeira")
-    
-    elif st.session_state.cutting_diagram_generated:
-        # Mostrar diagrama já gerado
-        fig, utilization, waste = generate_cutting_diagram(components)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("📊 Aproveitamento", f"{utilization:.1f}%")
-        with col2:
-            st.metric("🗑️ Desperdício", f"{waste:.1f}%")
-        with col3:
-            st.metric("📦 Chapas Necessárias", "1")
-        with col4:
-            sheet_cost = (2.75 * 1.83) * 80
-            st.metric("💰 Custo da Chapa", f"R$ {sheet_cost:.2f}")
-    
-    else:
-        st.info("📐 Clique em 'Gerar Diagrama de Corte' para criar o plano de corte otimizado.")
+                with st.spinner("Gerando diagrama otimizado..."):
+                    fig, utilization, waste = generate_cutting_diagram(components)
+                    
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Estatísticas
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        st.metric("📊 Aproveitamento", f"{utilization:.1f}%", 
+                                 delta="Excelente" if utilization > 80 else "Bom" if utilization > 60 else "Regular")
+                    
+                    with col2:
+                        st.metric("🗑️ Desperdício", f"{waste:.1f}%", 
+                                 delta=f"{-5:.1f}% vs média")
+                    
+                    with col3:
+                        st.metric("📦 Chapas Necessárias", "1", delta="Otimizado")
+                    
+                    with col4:
+                        sheet_cost = (2.75 * 1.83) * 80  # Área da chapa * preço MDF
+                        st.metric("💰 Custo da Chapa", f"R$ {sheet_cost:.2f}")
+                    
+                    # Informações adicionais
+                    st.markdown("---")
+                    st.markdown("### 📋 Informações do Corte")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**Especificações da Chapa:**")
+                        st.write("• Dimensões: 2750 x 1830 mm")
+                        st.write("• Material: MDF 15mm")
+                        st.write("• Área: 5.03 m²")
+                        
+                    with col2:
+                        st.markdown("**Recomendações:**")
+                        st.write("• Usar serra circular com guia")
+                        st.write("• Margem de segurança: 3mm")
+                        st.write("• Verificar fibra da madeira")
+            
+            elif st.session_state.cutting_diagram_generated:
+                # Mostrar diagrama já gerado
+                fig, utilization, waste = generate_cutting_diagram(components)
+                st.plotly_chart(fig, use_container_width=True)
+                
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("📊 Aproveitamento", f"{utilization:.1f}%")
+                with col2:
+                    st.metric("🗑️ Desperdício", f"{waste:.1f}%")
+                with col3:
+                    st.metric("📦 Chapas Necessárias", "1")
+                with col4:
+                    sheet_cost = (2.75 * 1.83) * 80
+                    st.metric("💰 Custo da Chapa", f"R$ {sheet_cost:.2f}")
+            
+            else:
+                st.info("📐 Clique em 'Gerar Diagrama de Corte' para criar o plano de corte otimizado.")
 
 elif page == "📦 Materiais":
     st.markdown("### 📦 Materiais")
@@ -1032,118 +1029,116 @@ elif page == "📊 Relatórios":
     
     if not data['projects']:
         st.warning("📭 Nenhum projeto encontrado.")
-        return
-    
-    current_project = data['projects'][st.session_state.current_project]
-    
-    # Obter componentes
-    if current_project['id'] in data['components']:
-        components = data['components'][current_project['id']]
-    elif 'furniture_list' in current_project:
-        components = []
-        for furniture in current_project['furniture_list']:
-            components.extend(furniture['components'])
     else:
-        components = []
-    
-    if not components:
-        st.warning("⚠️ Nenhum componente encontrado para gerar relatórios.")
-        return
-    
-    # Gerar dados para relatórios
-    budget_data, material_summary, total_cost, total_area, total_weight = generate_budget(
-        current_project['id'], components, data['materials']
-    )
-    
-    # Métricas principais
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("💰 Custo Total", f"R$ {total_cost:.2f}")
-    
-    with col2:
-        st.metric("📏 Área Total", f"{total_area:.2f} m²")
-    
-    with col3:
-        st.metric("⚖️ Peso Total", f"{total_weight:.1f} kg")
-    
-    with col4:
-        avg_cost_per_m2 = total_cost / total_area if total_area > 0 else 0
-        st.metric("📊 Custo/m²", f"R$ {avg_cost_per_m2:.2f}")
-    
-    # Gráfico de custos por material
-    st.markdown("#### 💰 Análise de Custos por Material")
-    
-    materials_chart = []
-    costs_chart = []
-    
-    for material, data_mat in material_summary.items():
-        materials_chart.append(material)
-        costs_chart.append(data_mat['cost'])
-    
-    fig_cost = px.pie(
-        values=costs_chart,
-        names=materials_chart,
-        title="Distribuição de Custos por Material"
-    )
-    
-    st.plotly_chart(fig_cost, use_container_width=True)
-    
-    # Tabela detalhada de componentes
-    st.markdown("#### 📋 Detalhamento por Componente")
-    
-    df_budget = pd.DataFrame(budget_data)
-    st.dataframe(df_budget, use_container_width=True)
-    
-    # Botões de exportação
-    st.markdown("#### 📤 Exportar Relatórios")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        # CSV detalhado
-        csv_content = create_csv_report(budget_data, material_summary, current_project['name'])
+        current_project = data['projects'][st.session_state.current_project]
         
-        st.download_button(
-            label="📊 Download CSV Completo",
-            data=csv_content,
-            file_name=f"relatorio_completo_{current_project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-            type="primary"
-        )
-    
-    with col2:
-        # Lista de componentes simples
-        df_simple = df_budget[['Componente', 'Dimensões (mm)', 'Quantidade', 'Material', 'Custo Total (R$)']]
-        csv_simple = df_simple.to_csv(index=False)
+        # Obter componentes
+        if current_project['id'] in data['components']:
+            components = data['components'][current_project['id']]
+        elif 'furniture_list' in current_project:
+            components = []
+            for furniture in current_project['furniture_list']:
+                components.extend(furniture['components'])
+        else:
+            components = []
         
-        st.download_button(
-            label="📋 Download Lista Componentes",
-            data=csv_simple,
-            file_name=f"componentes_{current_project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv"
-        )
-    
-    with col3:
-        # Resumo de materiais
-        df_materials_summary = pd.DataFrame([
-            {
-                'Material': material,
-                'Área (m²)': round(data_mat['area'], 4),
-                'Custo (R$)': round(data_mat['cost'], 2),
-                'Peso (kg)': round(data_mat['weight'], 2)
-            }
-            for material, data_mat in material_summary.items()
-        ])
-        
-        csv_materials = df_materials_summary.to_csv(index=False)
-        
-        st.download_button(
-            label="📦 Download Resumo Materiais",
-            data=csv_materials,
-            file_name=f"materiais_{current_project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv"
-        )
+        if not components:
+            st.warning("⚠️ Nenhum componente encontrado para gerar relatórios.")
+        else:
+            # Gerar dados para relatórios
+            budget_data, material_summary, total_cost, total_area, total_weight = generate_budget(
+                current_project['id'], components, data['materials']
+            )
+            
+            # Métricas principais
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("💰 Custo Total", f"R$ {total_cost:.2f}")
+            
+            with col2:
+                st.metric("📏 Área Total", f"{total_area:.2f} m²")
+            
+            with col3:
+                st.metric("⚖️ Peso Total", f"{total_weight:.1f} kg")
+            
+            with col4:
+                avg_cost_per_m2 = total_cost / total_area if total_area > 0 else 0
+                st.metric("📊 Custo/m²", f"R$ {avg_cost_per_m2:.2f}")
+            
+            # Gráfico de custos por material
+            st.markdown("#### 💰 Análise de Custos por Material")
+            
+            materials_chart = []
+            costs_chart = []
+            
+            for material, data_mat in material_summary.items():
+                materials_chart.append(material)
+                costs_chart.append(data_mat['cost'])
+            
+            fig_cost = px.pie(
+                values=costs_chart,
+                names=materials_chart,
+                title="Distribuição de Custos por Material"
+            )
+            
+            st.plotly_chart(fig_cost, use_container_width=True)
+            
+            # Tabela detalhada de componentes
+            st.markdown("#### 📋 Detalhamento por Componente")
+            
+            df_budget = pd.DataFrame(budget_data)
+            st.dataframe(df_budget, use_container_width=True)
+            
+            # Botões de exportação
+            st.markdown("#### 📤 Exportar Relatórios")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # CSV detalhado
+                csv_content = create_csv_report(budget_data, material_summary, current_project['name'])
+                
+                st.download_button(
+                    label="📊 Download CSV Completo",
+                    data=csv_content,
+                    file_name=f"relatorio_completo_{current_project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    type="primary"
+                )
+            
+            with col2:
+                # Lista de componentes simples
+                df_simple = df_budget[['Componente', 'Dimensões (mm)', 'Quantidade', 'Material', 'Custo Total (R$)']]
+                csv_simple = df_simple.to_csv(index=False)
+                
+                st.download_button(
+                    label="📋 Download Lista Componentes",
+                    data=csv_simple,
+                    file_name=f"componentes_{current_project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
+            
+            with col3:
+                # Resumo de materiais
+                df_materials_summary = pd.DataFrame([
+                    {
+                        'Material': material,
+                        'Área (m²)': round(data_mat['area'], 4),
+                        'Custo (R$)': round(data_mat['cost'], 2),
+                        'Peso (kg)': round(data_mat['weight'], 2)
+                    }
+                    for material, data_mat in material_summary.items()
+                ])
+                
+                csv_materials = df_materials_summary.to_csv(index=False)
+                
+                st.download_button(
+                    label="📦 Download Resumo Materiais",
+                    data=csv_materials,
+                    file_name=f"materiais_{current_project['name'].replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
 
 # Footer
 st.markdown("---")
